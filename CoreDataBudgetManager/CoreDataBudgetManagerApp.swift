@@ -19,8 +19,10 @@ struct CoreDataBudgetManagerApp: App {
     var body: some Scene {
         
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, provider.viewContext)
+            NavigationStack{
+                BudgetListScreen()
+                    .environment(\.managedObjectContext, provider.viewContext)
+            }
         }
     }
 }
