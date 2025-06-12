@@ -44,7 +44,10 @@ struct BudgetDetailScreen: View {
             try context.save()
             title = ""
             amount = nil
+            quantity = nil
+            selectedTags = []
         } catch {
+            context.rollback()
             print(error)
         }
     }
