@@ -13,8 +13,9 @@ struct ExpenseCellView: View {
         VStack(alignment: .leading){
             HStack {
                 Text(expense.title ?? "")
-                Spacer()
-                Text(expense.amount , format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
+                Text("\(expense.quantity)")
+                Spacer()     
+                Text(expense.total , format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack{

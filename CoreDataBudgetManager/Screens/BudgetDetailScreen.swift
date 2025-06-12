@@ -17,6 +17,7 @@ struct BudgetDetailScreen: View {
     let budget: Budget
     @State private var title: String = ""
     @State private var amount: Double?
+    @State private var quantity: Int?
     
     @FetchRequest(sortDescriptors: []) private var expenses: FetchedResults<Expense>
     
@@ -26,13 +27,14 @@ struct BudgetDetailScreen: View {
     }
     
     private func isFormValid() -> Bool {
-        !title.isEmptyOrWhiteSpace && amount != nil && Double(amount!) > 0 && !selectedTags.isEmpty
+        !title.isEmptyOrWhiteSpace && amount != nil && Double(amount!) > 0 && !selectedTags.isEmpty && quantity != nil && Int(quantity!) > 0
     }
-    
+       
     private func addExpense(){
         let expense = Expense(context: context)
         expense.title = title
         expense.amount = amount ?? 0.0
+        expense.quantity = Int16(quantity ?? 0)
         expense.dateCreated = Date()
         expense.tags = NSSet(array: Array(selectedTags))
         
@@ -75,6 +77,9 @@ struct BudgetDetailScreen: View {
             Section("New Expense"){
                 TextField("Title", text: $title  )
                 TextField("Amount", value: $amount, format: .number)
+                    .keyboardType(.numberPad)
+                TextField("Quantity", value: $quantity, format: .number)
+                    .keyboardType(.numberPad)
                 
                 TagsView(selectedTags: $selectedTags)
 
