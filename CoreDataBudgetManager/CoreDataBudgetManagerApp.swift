@@ -11,9 +11,11 @@ import SwiftUI
 struct CoreDataBudgetManagerApp: App {
     
     let provider: CoreDataProvider
+    let tag: TagSeeder
     
     init() {
         provider = CoreDataProvider()
+        tag  = TagSeeder(context: provider.viewContext)
     }
     
     var body: some Scene {
@@ -21,8 +23,30 @@ struct CoreDataBudgetManagerApp: App {
         WindowGroup {
             NavigationStack{
                 BudgetListScreen()
-                    .environment(\.managedObjectContext, provider.viewContext)
+                    
+                    .onAppear {
+                        
+                        
+                        let hasSeed = UserDefaults.standard.bool(forKey: "hasSeedData")
+                        if !hasSeed {
+                            let commonTags = ["Food",
+                            "Dining", "Travel",
+                            "Utilities",
+                            "Entertainment",
+                            "Groceries", "Health", "Education",
+                            "Shopping", "Transportation"]
+                            do {
+                                
+                                try tag.seed(commonTags)
+                            } catch {
+                                print(error)
+                            }
+                            UserDefaults.standard.set(true, forKey: "hasSeedData")
+                            
+                        }
+                    }
             }
+            .environment(\.managedObjectContext, provider.viewContext)
         }
     }
 }
