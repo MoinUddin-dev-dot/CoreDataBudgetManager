@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AddBudgetScreen: View {
     
+    @Environment(\.dismiss ) private var dismiss
     @Environment(\.managedObjectContext) private var context
     @State private var title: String = ""
     @State private var limit: Double?
@@ -26,6 +27,7 @@ struct AddBudgetScreen: View {
             budget.dateCreated = Date()
             try context.save()
             errorMessage = ""
+            dismiss()
         } catch {
             errorMessage = "Duplicate entry not allowed , already exist"
         }

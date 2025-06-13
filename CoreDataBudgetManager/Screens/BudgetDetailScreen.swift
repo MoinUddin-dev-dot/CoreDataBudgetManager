@@ -8,16 +8,32 @@
 import SwiftUI
 import CoreData
 
+struct ExpenseEditConfig: Identifiable {
+    var id = UUID()
+    let expense: Expense
+    let childContext: NSManagedObjectContext
+    
+    
+    init?(expenseObjectID: NSManagedObjectID ,context: NSManagedObjectContext){
+        self.childContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        self.childContext.parent = context
+        guard let existingExpense = self.childContext.object(with: expenseObjectID) as? Expense else { return nil }
+        self.expense = existingExpense
+    }
+}
+
 struct BudgetDetailScreen: View {
     
     @Environment(\.managedObjectContext) private var context
     @State private var selectedTags: Set<Tag> = []
-    
+    @State private var errorMessage: String = ""
     
     let budget: Budget
     @State private var title: String = ""
     @State private var amount: Double?
     @State private var quantity: Int?
+//    @State private var expenseEdit: Expense?
+    @State private var expenseEditConfig : ExpenseEditConfig?
     
     @FetchRequest(sortDescriptors: []) private var expenses: FetchedResults<Expense>
     
@@ -46,6 +62,7 @@ struct BudgetDetailScreen: View {
             amount = nil
             quantity = nil
             selectedTags = []
+            errorMessage = ""
         } catch {
             context.rollback()
             print(error)
@@ -87,13 +104,21 @@ struct BudgetDetailScreen: View {
                 TagsView(selectedTags: $selectedTags)
 
                 Button {
-                    addExpense()
+                    if !Expense.exist(context: context, title: title){
+                        addExpense()
+                    } else{
+                        errorMessage = "Expense item must be unique"
+                    }
+                    
+                    
                 } label: {
                     Text("Save")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(!isFormValid())
+                
+                Text(errorMessage)
 
             }
             Section("Expenses"){
@@ -119,13 +144,29 @@ struct BudgetDetailScreen: View {
                     }
                     ForEach(expenses){ expense in
                         ExpenseCellView(expense: expense )
-                        
+                            .onLongPressGesture {
+//                                expenseEdit = expense
+                                expenseEditConfig = ExpenseEditConfig(expenseObjectID: expense.objectID, context: context)
+                            }
                     }
                     .onDelete(perform: deleteExpense)
                 }
             }
         }
         .navigationTitle(budget.title ?? "")
+        .sheet(item: $expenseEditConfig) { expenseConfig in
+            NavigationStack{
+                ExpenseEdit(expense: expenseConfig.expense){
+                    do {
+                        try context.save()
+                        expenseEditConfig = nil
+                    } catch {
+                        print(error)
+                    }
+                }
+                    .environment(\.managedObjectContext, expenseConfig.childContext)
+            }
+        }
     }
 }
 

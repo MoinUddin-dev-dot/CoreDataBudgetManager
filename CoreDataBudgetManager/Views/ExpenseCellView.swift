@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ExpenseCellView: View {
-    let expense: Expense
+    @ObservedObject var expense: Expense
     var body: some View {
         VStack(alignment: .leading){
             HStack {
@@ -17,7 +17,7 @@ struct ExpenseCellView: View {
                
                 Spacer()     
                 Text(expense.total , format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
-            }
+            }.contentShape(Rectangle())
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack{
                     ForEach(Array(expense.tags as? Set<Tag> ?? [])){ tag in
